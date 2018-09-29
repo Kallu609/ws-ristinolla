@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css?family=Gochi+Hand|Open+Sans|Asap+Condensed');
+
+$main-font: 'Asap Condensed', sans-serif;
+$width: 300px;
+
+body {
+  font-family: $main-font;
+}
+
+input, button {
+  font-family: $main-font;
+  box-sizing: border-box;
+  font-size: 20px;
+  height: 40px;
+  padding: 5px;
+  border: 1px solid lightgray;
+}
+
+button {
+  cursor: pointer;
+}
+
+.container {
+  width: $width;
+  margin: 0 auto;
+}
+
+.header {
+  font-family: 'Gochi Hand', cursive;
+  text-align: center;
+  font-size: $width * 0.23;
+  margin-bottom: 10px;
+}
+
+.board {
+  $col-size: $width / 3;
+
+  display: grid;
+  grid-template-columns: auto auto auto;
+  margin-bottom: 20px;
+  width: $col-size * 3;
+  font-size: $col-size / 1.5;
+  text-align: center;
+  line-height: $col-size;
+  font-family: 'Gochi Hand', cursive;
+
+  .col {
+    $bg: #ebebeb;
+    $outline: darken($bg, 5%);
+    
+    width: $col-size;
+    height: $col-size;
+    outline: 2px solid $outline;
+    outline-offset: -1px;
+    background: $bg;
+ 
+    &:not(.nohover):hover {
+      background: darken($bg, 7%);
+      outline: 2px solid darken($outline, 7%);
+      transform: scale(1.2); 
+      cursor: pointer;
+    }
+
+    &.nohover {
+      cursor: not-allowed;
+    }
+
+    &.x {
+      color: #000;
+    }
+
+    &.o {
+      color: #ff0000;
+    }
+  }
+}
+
+.signin {
+  transition: 0.5s ease-in-out;
+
+  display: flex;
+  flex-direction: row;
+  flex-grow: 2;
+  input { width: 200px; }
+  button { width: 100px; }
+}
+
+.playerlist {
+  header {
+    font-size: 24px;
+    margin: 17px 0px 15px 0px;
+  }
+
+  .player {
+    margin-bottom: 10px;
+  }
+}
+
+@keyframes shrink {
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes slideup {
+  100% {
+    transform: translateY(-60px);
+  }
+}

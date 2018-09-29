@@ -1,0 +1,26 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible', content='ie=edge')
+    title Ristinolla
+    link(rel='stylesheet', href='style.scss')
+  body
+    .container
+      .header Ristinolla
+      .board
+        - for(var i = 0; i < 9; i++)
+          .col.nohover
+
+      .signin
+        input(type='text' placeholder='Nimesi')
+        button Sisään
+
+      .playerlist
+        header Pelaajat (
+          span.count 0
+          | )
+        .names
+
+    script(src='app.ts')
