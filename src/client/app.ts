@@ -1,75 +1,36 @@
-const $ = document.querySelector.bind(document);
-const $all = document.querySelectorAll.bind(document);
+import SocketHandler from './SocketHandler';
+import { $, $all } from './elementHelper';
 
-const cols = $all('.board > .col') as HTMLDivElement[];
-const signinDiv = $('.signin') as HTMLDivElement;
-const nameInput = $('.signin > input') as HTMLInputElement;
-const signinBtn = $('.signin > button') as HTMLButtonElement;
-const playerList = $('.playerlist') as HTMLDivElement;
-const playerCount = $('.playerlist .count') as HTMLDivElement;
-const playerNames = $('.playerlist > .names') as HTMLDivElement;
+const guideTextEl = $('.guide-text') as HTMLDivElement;
+const colsEl = $all('.board > .col') as HTMLDivElement[];
 
+const statusTexts = {
+  connecting: ['Yhdistetään', true],
+  signin: ['Kerro nimesi'],
+  searching: ['Odotetaan pelaajaa', true],
+};
 
-class SocketHandler {
-  ws: WebSocket;
+class App {
+  socketHandler: SocketHandler;
   playerName: string;
+  playerID: string;
 
   constructor() {
-    this.ws = new WebSocket('ws://localhost:6969');
-    this.webSocketHandler();
-    this.listeners();
+    this.socketHandler = new SocketHandler(this);
+    this.setStatusText('connecting');
   }
 
-  webSocketHandler(): void {
-    const { ws } = this;
+  setStatusText(type: string): void {
+    const text = statusTexts[type][0];
 
-    ws.onopen = () => {
-      console.log('Websocket connected.');
-    }
-    
-    ws.onmessage = (ev) => {
-      const { data } = ev;
-      const [command, ...args] = data.split(' ');
-      
-      if (command === 'playerlist') {
-        const joined = args.join(' ');
-        const list = JSON.parse(joined) as string[];
-        
-        playerCount.innerHTML = list.length.toString();
-        playerNames.innerHTML = list.map(name => {
-          return `
-          <div class="player">
-            ${name + (name === this.playerName ? ' (Sinä)' : '')}
-          </div>
-          `
-        }).join('\n');
-      }
-    }
+    guideTextEl.innerHTML = text;
   }
 
-  listeners(): void {
-    signinBtn.addEventListener('click', () => {
-      const name = nameInput.value.trim();
-    
-      if (name === '') {
-        alert('Laita joku nimi pelle.');
-        return;
-      }
-
-      animate(signinDiv, 'shrink 0.5s');
-      animate(playerList, 'slideup 1.0s');
-
-      Array.from(cols).map(col => col.classList.remove('nohover'));
-      this.ws.send(`signin ${name}`);
-      this.playerName = name;
-    });
+  startGame(): void {
+    Array.from(colsEl).map(col => col.classList.remove('nohover'));
   }
 }
 
-function animate(el: HTMLElement, animation: string): void {
-  el.style.animation = animation;
-  el.style.animationIterationCount = '1';
-  el.style.animationFillMode = 'forwards';
-}
+new App();
 
-new SocketHandler();
+export default App;

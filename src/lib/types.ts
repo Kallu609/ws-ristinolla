@@ -1,7 +1,6 @@
 import * as WebSocket from 'ws';
 import Player from '../server/Player';
 
-
 export interface PlayerSocket extends WebSocket {
   id: string;
   player?: Player;
@@ -10,10 +9,12 @@ export interface PlayerSocket extends WebSocket {
 }
 
 export interface IPlayer {
-  socket: WebSocket;
+  socket?: WebSocket;
+  id?: string;
   name: string;
   wins: number;
   losses: number;
+  playing: boolean;
 }
 
 export interface PlayerList {

@@ -5,16 +5,18 @@ html(lang='en')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
     meta(http-equiv='X-UA-Compatible', content='ie=edge')
     title Ristinolla
-    link(rel='stylesheet', href='style.scss')
+    link(rel='stylesheet', href='style/main.scss')
   body
     .container
       .header Ristinolla
+      .statustext
+
       .board
         - for(var i = 0; i < 9; i++)
           .col.nohover
 
       .signin
-        input(type='text' placeholder='Nimesi')
+        input(type='text' placeholder='Nimi...')
         button Sisään
 
       .playerlist

@@ -1,8 +1,7 @@
 import * as uu from 'uuid';
 import * as WebSocket from 'ws';
 import Player from './Player';
-import { PlayerSocket } from '../lib/types';
-
+import { PlayerSocket, IPlayer } from '../lib/types';
 
 class Server {
   wss: WebSocket.Server;
@@ -23,7 +22,7 @@ class Server {
       this.sockets.push(ws);
     });
   }
-  
+
   sendToAll(data: any): void {
     for (const socket of this.sockets) {
       if (socket.readyState === WebSocket.OPEN) {
@@ -34,25 +33,38 @@ class Server {
 
   getPlayers(): Array<Player> {
     const players = this.sockets
-      .map(socket => socket.player)
+      .map(socket => {
+        if (!socket.player || !socket.player.name) return;
+
+        const { name, wins, losses, playing, id, ...rest } = socket.player;
+
+        return {
+          name,
+          wins,
+          losses,
+          playing,
+          id,
+        } as IPlayer;
+      })
       .filter(x => x);
 
     return players as Array<Player>;
   }
 
-  getPlayerNames(): Array<string> {
-    const names = this.getPlayers()
-      .map(player => player.name)
+  getAvailablePlayers(): Array<Player> {
+    const available = this.getPlayers()
+      .map(player => {
+        return !player.playing ? player : undefined;
+      })
       .filter(x => x);
-    
-    return names;
+
+    return available as Array<Player>;
   }
-  
+
   sendPlayersToAll(): void {
-    const json = JSON.stringify(this.getPlayerNames());
+    const json = JSON.stringify(this.getPlayers());
     this.sendToAll(`playerlist ${json}`);
   }
-  
 }
 
 export default Server;
