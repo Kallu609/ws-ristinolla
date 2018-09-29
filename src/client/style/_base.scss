@@ -1,15 +1,19 @@
 @import url('https://fonts.googleapis.com/css?family=Gochi+Hand|Open+Sans|Asap+Condensed');
 
 $main-font: 'Asap Condensed', sans-serif;
+$bg-primary: #ebebeb;
+$text-primary: #4e4e4e;
 $text-secondary: rgb(155, 155, 155);
 $width: 300px;
 
 body {
+  color: $text-primary;
   font-family: $main-font;
 }
 
 input,
 button {
+  color: $text-primary;
   font-family: $main-font;
   box-sizing: border-box;
   font-size: 20px;
@@ -20,6 +24,11 @@ button {
 
 button {
   cursor: pointer;
+  background: $bg-primary;
+
+  &:hover {
+    background: darken($bg-primary, 5%);
+  }
 }
 
 .noselect {

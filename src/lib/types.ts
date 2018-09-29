@@ -9,14 +9,11 @@ export interface PlayerSocket extends WebSocket {
 }
 
 export interface IPlayer {
-  socket?: WebSocket;
-  id?: string;
+  id: string;
   name: string;
   wins: number;
   losses: number;
-  playing: boolean;
+  opponentID: string;
 }
 
-export interface PlayerList {
-  [key: string]: IPlayer;
-}
+export type IGameData = Array<IPlayer>;

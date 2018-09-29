@@ -1,14 +1,13 @@
-import * as uu from 'uuid';
 import * as WebSocket from 'ws';
 import Player from './Player';
-import { PlayerSocket, IPlayer } from '../lib/types';
+import { PlayerSocket, IPlayer, IGameData } from '../lib/types';
+import { generateUUID } from '../lib/uuidGenerator';
 
 class Server {
   wss: WebSocket.Server;
-  sockets: Array<PlayerSocket>;
+  sockets: Array<PlayerSocket> = [];
 
   constructor(public port: number) {
-    this.sockets = [];
     this.create();
   }
 
@@ -16,11 +15,13 @@ class Server {
     this.wss = new WebSocket.Server({ port: this.port });
 
     this.wss.on('connection', (ws: PlayerSocket) => {
-      ws.id = uu.v4();
+      ws.id = generateUUID();
       ws.player = new Player(this, ws);
 
       this.sockets.push(ws);
     });
+
+    this.matchMaker();
   }
 
   sendToAll(data: any): void {
@@ -36,17 +37,9 @@ class Server {
       .map(socket => {
         if (!socket.player || !socket.player.name) return;
 
-        const { name, wins, losses, playing, id, ...rest } = socket.player;
-
-        return {
-          name,
-          wins,
-          losses,
-          playing,
-          id,
-        } as IPlayer;
+        return socket.player;
       })
-      .filter(x => x);
+      .filter(Boolean);
 
     return players as Array<Player>;
   }
@@ -54,16 +47,55 @@ class Server {
   getAvailablePlayers(): Array<Player> {
     const available = this.getPlayers()
       .map(player => {
-        return !player.playing ? player : undefined;
+        return !player.opponentID ? player : undefined;
       })
-      .filter(x => x);
+      .filter(Boolean);
 
     return available as Array<Player>;
   }
 
+  getGameData(): IGameData {
+    const gameData = this.getPlayers().map(player => {
+      const { name, wins, losses, id, opponentID, ...rest } = player;
+      return {
+        name,
+        wins,
+        losses,
+        id,
+        opponentID,
+      } as IPlayer;
+    });
+
+    return gameData;
+  }
+
   sendPlayersToAll(): void {
-    const json = JSON.stringify(this.getPlayers());
+    const json = JSON.stringify(this.getGameData());
     this.sendToAll(`playerlist ${json}`);
+  }
+
+  matchMaker(): void {
+    /*const players = this.getAvailablePlayers();
+
+    if (players.length >= 2) {
+      this.createMatch(players[0], players[1]);
+    }
+
+    setTimeout(() => {
+      this.matchMaker();
+    }, 100);*/
+  }
+
+  createMatch(player1: Player, player2: Player): void {
+    player1.opponentID = player2.id;
+    player2.opponentID = player1.id;
+
+    this.sendPlayersToAll();
+
+    player1.ws.send(`startmatch`);
+    player2.ws.send(`startmatch`);
+
+    console.log(`Match started: ${player1.name} VS ${player2.name}`);
   }
 }
 

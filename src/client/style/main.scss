@@ -9,6 +9,7 @@
 
 .header {
   @extend .noselect;
+  color: black;
   font-family: 'Gochi Hand', cursive;
   text-align: center;
   font-size: $width * 0.23;
@@ -36,7 +37,9 @@
   }
 
   button {
-    width: 100px;
+    // Account for the border
+    margin-left: -1px;
+    width: 101px;
   }
 }
 
@@ -45,9 +48,26 @@
   header {
     font-size: 24px;
     margin: 17px 0px 15px 0px;
+
+    .count {
+      float: right;
+      margin-top: 5px;
+      font-size: 16px;
+      color: lighten($text-primary, 15%);
+    }
   }
 
   .player {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    line-height: 32px;
     margin-bottom: 10px;
+
+    button.challenge {
+      height: 32px;
+      min-width: 100px;
+      font-size: 18px;
+    }
   }
 }

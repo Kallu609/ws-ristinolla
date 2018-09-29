@@ -1,6 +1,6 @@
 import { $, animate } from './elementHelper';
 import App from './app';
-import { IPlayer } from '../lib/types';
+import { IGameData } from '../lib/types';
 
 const signinEl = $('.signin') as HTMLDivElement;
 const nameInputEl = $('.signin > input') as HTMLInputElement;
@@ -19,35 +19,59 @@ class SocketHandler {
   }
 
   handleSocket(): void {
-    const { ws, app } = this;
+    const { ws } = this;
 
     ws.onopen = () => {
       console.log('Connected to server.');
-      this.app.setGuideText('signin');
+      this.app.setStatusText('signin');
+    };
+
+    ws.onclose = () => {
+      this.app.setStatusText('disconnected');
     };
 
     ws.onmessage = ev => {
       const { data } = ev;
-      const [command, ...args] = data.split(' ');
-
-      if (command === 'id') {
-        app.playerID = args[0];
-      }
-
-      if (command === 'playerlist') {
-        const joined = args.join(' ');
-        const playerList = JSON.parse(joined) as Array<IPlayer>;
-
-        playerCountEl.innerHTML = playerList.length.toString();
-        playerNamesEl.innerHTML = playerList
-          .map(player => {
-            const name =
-              player.name + (player.id === app.playerID ? ' (Sinä)' : '');
-            return `<div class="player" data-id="">${name}</div>`;
-          })
-          .join('\n');
-      }
+      this.commandHandler(data);
     };
+  }
+
+  commandHandler(data: any): void {
+    const { app } = this;
+    const [command, ...args] = data.split(' ');
+
+    if (command === 'id') {
+      app.playerID = args[0];
+    }
+
+    if (command === 'startmatch') {
+      app.startGame();
+    }
+
+    if (command === 'playerlist') {
+      const joined = args.join(' ');
+      app.playerList = JSON.parse(joined) as IGameData;
+
+      playerCountEl.innerHTML = `(${app.playersInlobby} aulassa, ${
+        app.playersIngame
+      } pelissä)`;
+
+      playerNamesEl.innerHTML = app.playerList
+        .filter(player => !player.opponentID)
+        .map(player => {
+          const isSelf = player.id === app.playerID;
+          const challengeBtn =
+            app.playerName && !isSelf
+              ? `<button class="challenge">Haasta</button>`
+              : '';
+
+          return `<div class="player" data-id="">
+            <div>${player.name}</div>
+            ${challengeBtn}
+          </div>`;
+        })
+        .join('\n');
+    }
   }
 
   eventListeners(): void {
@@ -76,7 +100,7 @@ class SocketHandler {
     this.ws.send(`signin ${name}`);
     this.app.playerName = name;
 
-    this.app.setGuideText('searching');
+    this.app.setStatusText('searching');
   }
 }
 
