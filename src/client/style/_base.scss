@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css?family=Gochi+Hand|Open+Sans|Asap+Condensed');
+
+$main-font: 'Asap Condensed', sans-serif;
+$text-secondary: rgb(155, 155, 155);
+$width: 300px;
+
+body {
+  font-family: $main-font;
+}
+
+input,
+button {
+  font-family: $main-font;
+  box-sizing: border-box;
+  font-size: 20px;
+  height: 40px;
+  padding: 5px;
+  border: 1px solid lightgray;
+}
+
+button {
+  cursor: pointer;
+}

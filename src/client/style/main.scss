@@ -1,0 +1,51 @@
+@import '_base.scss';
+@import '_animations.scss';
+@import '_board.scss';
+
+.container {
+  width: $width;
+  margin: 0 auto;
+}
+
+.header {
+  font-family: 'Gochi Hand', cursive;
+  text-align: center;
+  font-size: $width * 0.23;
+  margin-bottom: 10px;
+}
+
+.statustext {
+  position: absolute;
+  width: $width;
+  font-family: $main-font;
+  font-size: 15px;
+  line-height: $width;
+  text-align: center;
+  color: $text-secondary;
+}
+
+.signin {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 2;
+  transition: 0.5s ease-in-out;
+
+  input {
+    width: 200px;
+  }
+
+  button {
+    width: 100px;
+  }
+}
+
+.playerlist {
+  header {
+    font-size: 24px;
+    margin: 17px 0px 15px 0px;
+  }
+
+  .player {
+    margin-bottom: 10px;
+  }
+}

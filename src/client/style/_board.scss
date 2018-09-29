@@ -1,0 +1,44 @@
+.board {
+  $col-size: $width / 3;
+
+  display: grid;
+  grid-template-columns: auto auto auto;
+  margin-bottom: 20px;
+  width: $col-size * 3;
+  font-size: $col-size / 1.5;
+  text-align: center;
+  line-height: $col-size;
+  font-family: 'Gochi Hand', cursive;
+
+  .col {
+    $bg: #ebebeb;
+    $outline: darken($bg, 5%);
+
+    width: $col-size;
+    height: $col-size;
+    outline: 2px solid $outline;
+    outline-offset: -1px;
+    background: $bg;
+
+    &:not(.nohover):hover {
+      background: darken($bg, 7%);
+      outline: 2px solid darken($outline, 7%);
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+
+    &.nohover {
+      cursor: not-allowed;
+      background: lighten($bg, 5%);
+      outline: 2px solid lighten($outline, 5%);
+    }
+
+    &.x {
+      color: #000;
+    }
+
+    &.o {
+      color: #ff0000;
+    }
+  }
+}
