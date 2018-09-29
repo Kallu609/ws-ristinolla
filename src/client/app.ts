@@ -1,7 +1,7 @@
 import SocketHandler from './SocketHandler';
 import { $, $all } from './elementHelper';
 
-const guideTextEl = $('.guide-text') as HTMLDivElement;
+const statusTextEl = $('.statustext') as HTMLDivElement;
 const colsEl = $all('.board > .col') as HTMLDivElement[];
 
 const statusTexts = {
@@ -23,7 +23,7 @@ class App {
   setStatusText(type: string): void {
     const text = statusTexts[type][0];
 
-    guideTextEl.innerHTML = text;
+    statusTextEl.innerHTML = text;
   }
 
   startGame(): void {

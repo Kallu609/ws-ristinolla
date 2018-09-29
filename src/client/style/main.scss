@@ -8,6 +8,7 @@
 }
 
 .header {
+  @extend .noselect;
   font-family: 'Gochi Hand', cursive;
   text-align: center;
   font-size: $width * 0.23;
@@ -40,6 +41,7 @@
 }
 
 .playerlist {
+  @extend .noselect;
   header {
     font-size: 24px;
     margin: 17px 0px 15px 0px;
