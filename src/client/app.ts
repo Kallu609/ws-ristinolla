@@ -1,53 +1,36 @@
-import SocketHandler from './SocketHandler';
-import { $, $all } from './elementHelper';
+import Player from './player';
 import { IGameData, IPlayer } from '../lib/types';
-
-const statusTextEl = $('.statustext') as HTMLDivElement;
-const colsEl = $all('.board > .col') as HTMLDivElement[];
-
-const statusTexts = {
-  connecting: ['Yhdistetään', true],
-  signin: ['Kerro nimesi'],
-  searching: ['Odotetaan pelaajia', true],
-  disconnected: ['Yhteys katkesi'],
-  empty: [''],
-};
+import { webSocketPort } from '../../config';
+import { setStatusText, enableBoard } from './dom';
 
 class App {
-  socketHandler: SocketHandler;
+  ws: WebSocket;
+  player: Player;
   playerList: IGameData = [];
   playerName: string;
   playerID: string;
 
   constructor() {
-    this.socketHandler = new SocketHandler(this);
-    this.setStatusText('connecting');
-  }
-
-  setStatusText(type: string): void {
-    const text = statusTexts[type][0];
-    // const dots = statusTexts[type][1]; // TODO
-
-    statusTextEl.innerHTML = text;
+    this.ws = new WebSocket(`ws://localhost:${webSocketPort}`);
+    this.player = new Player(this, this.ws);
+    setStatusText('connecting');
   }
 
   startGame(): void {
     const self = this.playerList.find(x => x.id === this.playerID) as IPlayer;
-    const opponent = this.playerList.find(
-      x => x.id === self.opponentID
-    ) as IPlayer;
+    const opponent = this.getPlayerByID(self.opponentID);
+    if (!opponent) return;
+    enableBoard();
 
     console.log(`Game started against ${opponent.name}`);
-
-    statusTextEl.innerHTML = 'Aloita!';
-    setTimeout(() => {
-      statusTextEl.innerHTML = '';
-    }, 1000);
-
-    Array.from(colsEl).map(col => col.classList.remove('nohover'));
   }
 
-  get playersIngame(): number {
+  getPlayerByID(id: string): IPlayer | undefined {
+    const player = this.playerList.find(x => x.id === id);
+    return player || undefined;
+  }
+
+  get playersInGame(): number {
     return this.playerList.filter(x => x.opponentID).length;
   }
 

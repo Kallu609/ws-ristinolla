@@ -24,7 +24,9 @@ async function closeBrowser(): Promise<void> {
   await browser.close();
 }
 
-async function testSignIn(): Promise<string> {}
+async function testSignIn(): Promise<string> {
+  return ''; // TODO
+}
 
 async function getPlayerCounts(): Promise<string> {
   await openBrowser();

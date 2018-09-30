@@ -1,7 +1,7 @@
 import * as WebSocket from 'ws';
-import Player from './Player';
+import Player from './player';
 import { PlayerSocket, IPlayer, IGameData } from '../lib/types';
-import { generateUUID } from '../lib/uuidGenerator';
+import { generateUUID } from '../lib/uuid-generator';
 import { webSocketPort } from '../../config';
 
 class Server {
@@ -25,12 +25,19 @@ class Server {
     });
   }
 
-  sendToAll(data: any): void {
+  sendToAll(...data: any): void {
+    if (!data || !data.length) return;
+    const json = JSON.stringify(data);
+
     for (const socket of this.sockets) {
       if (socket.readyState === WebSocket.OPEN) {
-        socket.send(data);
+        socket.send(json);
       }
     }
+  }
+
+  sendGameData(): void {
+    this.sendToAll('playerlist', this.getGameData());
   }
 
   getPlayers(): Array<Player> {
@@ -55,6 +62,11 @@ class Server {
     return available as Array<Player>;
   }
 
+  getPlayerByID(id: string): Player | undefined {
+    const socket = this.sockets.find(x => x.id === id) as PlayerSocket;
+    return socket && socket.player ? socket.player : undefined;
+  }
+
   getGameData(): IGameData {
     const gameData = this.getPlayers().map(player => {
       const { name, wins, losses, id, opponentID, ...rest } = player;
@@ -70,16 +82,11 @@ class Server {
     return gameData;
   }
 
-  sendPlayersToAll(): void {
-    const json = JSON.stringify(this.getGameData());
-    this.sendToAll(`playerlist ${json}`);
-  }
-
   createMatch(player1: Player, player2: Player): void {
     player1.opponentID = player2.id;
     player2.opponentID = player1.id;
 
-    this.sendPlayersToAll();
+    this.sendToAll('playerlist', this.getGameData());
 
     player1.ws.send(`startmatch`);
     player2.ws.send(`startmatch`);

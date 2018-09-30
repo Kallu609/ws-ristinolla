@@ -1,11 +1,12 @@
 import * as WebSocket from 'ws';
-import Player from '../server/Player';
+import Player from '../server/player';
 
 export interface PlayerSocket extends WebSocket {
   id: string;
   player?: Player;
   sendToAll: (data: string) => void;
   sendToElse: (data: string) => void;
+  sendJSON: (json: object) => void;
 }
 
 export interface IPlayer {

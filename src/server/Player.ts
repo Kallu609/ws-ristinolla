@@ -1,4 +1,4 @@
-import Server from './Server';
+import Server from './server';
 import { PlayerSocket } from '../lib/types';
 import * as WebSocket from 'ws';
 
@@ -15,71 +15,72 @@ class Player {
     this.onConnect();
   }
 
+  log = (...data: any) => console.log(`[${this.id}]`, ...data);
+
   private onConnect = () => {
     const { server, ws } = this;
 
-    ws.send(`id ${this.id}`);
-    this.getPlayers();
+    this.sendData('id', this.id);
+    this.sendData('playerlist', server.getGameData());
 
-    ws.on('message', (msg: string) => {
-      const [command, ...args] = msg.split(' ');
-
-      if (command === 'signin' && args.length > 0) {
-        this.name = args.join(' ');
-        server.sendPlayersToAll();
-        this.waitForGame();
-
-        console.log(`[${this.id}] Signed in: ${this.name}`);
-      }
-
-      if (command === 'challenge' && args.length === 2) {
-        const [action, value] = args;
-
-        if (action === 'to') {
-          this.sendChallenge(value);
-        }
-
-        if (action === 'from') {
-          this.challengerID = value;
-          server.sendPlayersToAll();
-        }
-
-        if (action === 'accept') {
-          this.opponentID = this.challengerID;
-          delete this.challengerID;
-
-          const opponent = server
-            .getPlayers()
-            .find(x => x.id === this.opponentID) as Player;
-
-          ws.send('startgame');
-          opponent.ws.send('startgame');
-
-          server.sendPlayersToAll();
-        }
-      }
+    ws.on('message', (data: string) => {
+      console.log('Incoming data:', JSON.parse(data));
+      this.onMessage(data);
     });
 
     ws.on('close', () => {
-      this.remove();
-      server.sendPlayersToAll();
-
-      const name = this.name || 'Someone';
-      console.log(
-        `[${this.id}] ${name} disconnected. Online: ${server.wss.clients.size}`
-      );
+      this.onClose();
     });
 
-    console.log(
-      `[${this.id}] New connection. Online: ${server.wss.clients.size}`
-    );
+    console.log(`New connection. Online: ${server.wss.clients.size}`);
   };
 
-  sendChallenge(opponentID: string): void {
+  onMessage(data: string): void {
     const { server } = this;
-    const opponent = server.getPlayers().find(x => x.id === opponentID);
+    const [command, ...args] = JSON.parse(data);
 
-    opponent && opponent.ws.send(`challenge from ${this.id}`);
+    if (command === 'signin' && args.length === 1) {
+      this.name = args[0];
+      server.sendGameData();
+      this.waitForGame();
+
+      this.log(`Signed in: ${this.name}`);
+    }
+
+    if (command === 'challenge to') {
+      const targetID = args[0];
+      this.sendChallenge(targetID);
+    }
+
+    if (command === 'challenge from') {
+      this.challengerID = args[0];
+      server.sendGameData();
+    }
+
+    if (command === 'challenge accept') {
+      const opponent = server.getPlayerByID(this.challengerID);
+
+      this.opponentID = this.challengerID;
+      delete this.challengerID;
+
+      if (!opponent) return;
+
+      this.sendData('start game');
+      opponent.sendData('startgame');
+      server.sendGameData();
+
+      console.log(`New match: ${this.name} vs. ${opponent.name}`);
+    }
+  }
+
+  onClose(): void {
+    const { server } = this;
+    const name = this.name || 'Someone';
+
+    this.disconnect();
+    server.sendGameData();
+
+    this.log(`${name} disconnected. Online: ${server.wss.clients.size}`);
   }
 
   waitForGame(): void {
@@ -90,32 +91,44 @@ class Player {
     }, 100);
   }
 
-  sendToElse(data: any): void {
+  setOpponentID(opponentID: string): void {
+    this.opponentID = opponentID;
+  }
+
+  sendChallenge(opponentID: string): void {
+    const { server } = this;
+    const opponent = server.getPlayerByID(opponentID);
+
+    opponent && opponent.sendData('challenge from', this.id);
+  }
+
+  sendToElse(...data: any): void {
+    if (!data.length) return;
+
     const { sockets } = this.server;
+    const json = JSON.stringify(data);
 
     for (const socket of sockets) {
       if (socket.id !== this.id && socket.readyState === WebSocket.OPEN) {
-        socket.send(data);
+        socket.send(json);
       }
     }
   }
 
-  remove(): void {
+  sendData(...data: any): void {
+    if (!data.length) return;
+    const json = JSON.stringify(data);
+    this.ws.send(json);
+  }
+
+  disconnect(): void {
     const { server } = this;
+    const opponent = server.getPlayerByID(this.opponentID);
 
+    opponent && delete opponent.opponentID;
     delete this.opponentID;
+
     server.sockets = server.sockets.filter(x => x.id !== this.id);
-  }
-
-  getPlayers(): void {
-    const { server, ws } = this;
-    const json = JSON.stringify(server.getGameData());
-
-    ws.send(`playerlist ${json}`);
-  }
-
-  setOpponentID(opponentID: string): void {
-    this.opponentID = opponentID;
   }
 }
 
