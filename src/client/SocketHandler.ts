@@ -1,6 +1,7 @@
-import { $, animate } from './elementHelper';
+import { $, animate, $all } from './elementHelper';
 import App from './app';
-import { IGameData } from '../lib/types';
+import { IGameData, IPlayer } from '../lib/types';
+import { webSocketPort } from '../../config';
 
 const signinEl = $('.signin') as HTMLDivElement;
 const nameInputEl = $('.signin > input') as HTMLInputElement;
@@ -13,7 +14,7 @@ class SocketHandler {
   ws: WebSocket;
 
   constructor(public app: App) {
-    this.ws = new WebSocket('ws://localhost:6969');
+    this.ws = new WebSocket(`ws://localhost:${webSocketPort}`);
     this.handleSocket();
     this.eventListeners();
   }
@@ -44,33 +45,30 @@ class SocketHandler {
       app.playerID = args[0];
     }
 
-    if (command === 'startmatch') {
-      app.startGame();
-    }
-
     if (command === 'playerlist') {
       const joined = args.join(' ');
       app.playerList = JSON.parse(joined) as IGameData;
 
-      playerCountEl.innerHTML = `(${app.playersInlobby} aulassa, ${
-        app.playersIngame
-      } pelissä)`;
+      this.updatePlayerList();
+    }
 
-      playerNamesEl.innerHTML = app.playerList
-        .filter(player => !player.opponentID)
-        .map(player => {
-          const isSelf = player.id === app.playerID;
-          const challengeBtn =
-            app.playerName && !isSelf
-              ? `<button class="challenge">Haasta</button>`
-              : '';
+    if (command === 'startgame') {
+      app.startGame();
+    }
 
-          return `<div class="player" data-id="">
-            <div>${player.name}</div>
-            ${challengeBtn}
-          </div>`;
-        })
-        .join('\n');
+    if (command === 'challenge' && args.length === 2) {
+      const [action, value] = args;
+
+      if (action === 'from') {
+        const from = app.playerList.find(x => x.id === value) as IPlayer;
+        const accept = confirm(`are u wana fite m8? t. ${from.name} ankka`);
+
+        if (accept) {
+          this.ws.send('challenge accept');
+        }
+      }
+
+      this.updatePlayerList();
     }
   }
 
@@ -99,8 +97,48 @@ class SocketHandler {
 
     this.ws.send(`signin ${name}`);
     this.app.playerName = name;
+  }
 
-    this.app.setStatusText('searching');
+  updatePlayerList(): void {
+    const { app } = this;
+
+    playerCountEl.innerHTML = `(${app.playersInLobby} aulassa, ${
+      app.playersIngame
+    } pelissä)`;
+
+    playerNamesEl.innerHTML = app.playerList
+      .filter(player => !player.opponentID)
+      .map(player => {
+        const isSelf = player.id === app.playerID;
+        const challengeBtn =
+          app.playerName && !isSelf
+            ? `<button class="challenge">Haasta</button>`
+            : '';
+
+        return `<div class="player" data-id="${player.id}">
+          <div>${player.name}</div>${challengeBtn}
+        </div>`;
+      })
+      .join('\n');
+
+    const challengeBtns = Array.from(
+      $all('.playerlist .challenge')
+    ) as HTMLElement[];
+
+    challengeBtns.map(btn => {
+      btn.addEventListener('click', e => {
+        const target = e.target as HTMLButtonElement;
+        const targetID = (target.closest(
+          '.player'
+        ) as HTMLDivElement).getAttribute('data-id');
+
+        this.ws.send(`challenge to ${targetID}`);
+      });
+    });
+
+    this.app.setStatusText(
+      this.app.playersInLobby === 1 ? 'searching' : 'empty'
+    );
   }
 }
 

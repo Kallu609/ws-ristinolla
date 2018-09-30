@@ -2,12 +2,15 @@ import * as WebSocket from 'ws';
 import Player from './Player';
 import { PlayerSocket, IPlayer, IGameData } from '../lib/types';
 import { generateUUID } from '../lib/uuidGenerator';
+import { webSocketPort } from '../../config';
 
 class Server {
+  port: number;
   wss: WebSocket.Server;
   sockets: Array<PlayerSocket> = [];
 
-  constructor(public port: number) {
+  constructor() {
+    this.port = webSocketPort;
     this.create();
   }
 
@@ -20,8 +23,6 @@ class Server {
 
       this.sockets.push(ws);
     });
-
-    this.matchMaker();
   }
 
   sendToAll(data: any): void {
@@ -72,18 +73,6 @@ class Server {
   sendPlayersToAll(): void {
     const json = JSON.stringify(this.getGameData());
     this.sendToAll(`playerlist ${json}`);
-  }
-
-  matchMaker(): void {
-    /*const players = this.getAvailablePlayers();
-
-    if (players.length >= 2) {
-      this.createMatch(players[0], players[1]);
-    }
-
-    setTimeout(() => {
-      this.matchMaker();
-    }, 100);*/
   }
 
   createMatch(player1: Player, player2: Player): void {

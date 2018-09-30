@@ -8,13 +8,14 @@ const colsEl = $all('.board > .col') as HTMLDivElement[];
 const statusTexts = {
   connecting: ['Yhdistetään', true],
   signin: ['Kerro nimesi'],
-  searching: ['Odotetaan pelaajaa', true],
+  searching: ['Odotetaan pelaajia', true],
   disconnected: ['Yhteys katkesi'],
+  empty: [''],
 };
 
 class App {
   socketHandler: SocketHandler;
-  playerList: IGameData;
+  playerList: IGameData = [];
   playerName: string;
   playerID: string;
 
@@ -25,6 +26,7 @@ class App {
 
   setStatusText(type: string): void {
     const text = statusTexts[type][0];
+    // const dots = statusTexts[type][1]; // TODO
 
     statusTextEl.innerHTML = text;
   }
@@ -49,7 +51,7 @@ class App {
     return this.playerList.filter(x => x.opponentID).length;
   }
 
-  get playersInlobby(): number {
+  get playersInLobby(): number {
     return this.playerList.filter(x => !x.opponentID).length;
   }
 
