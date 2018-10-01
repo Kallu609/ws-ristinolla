@@ -16,6 +16,7 @@
     "start": "npm-run-all -s build server"
   },
   "devDependencies": {
+    "@types/chalk": "^2.2.0",
     "@types/jest": "^23.3.2",
     "@types/puppeteer": "^1.6.4",
     "@types/ws": "^6.0.1",
@@ -31,6 +32,7 @@
     "typescript": "^3.0.3"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
     "ws": "^6.0.0"
   }
 }

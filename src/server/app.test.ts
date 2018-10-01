@@ -30,8 +30,6 @@ async function testSignIn(): Promise<string> {
 
 async function getPlayerCounts(): Promise<string> {
   await openBrowser();
-  await page.screenshot({ path: 'example.png' });
-
   const count = await $('.playerlist .count');
   return count.textContent as string;
 }

@@ -61,8 +61,8 @@ export function enableBoard(): void {
   Array.from(colsEl).map(col => col.classList.remove('nohover'));
 }
 
-export function updatePlayerList(player: Player): void {
-  const { app } = player;
+export function updatePlayerList(self: Player): void {
+  const { app } = self;
 
   playerCountEl.innerHTML = `(${app.playersInLobby} aulassa, ${
     app.playersInGame
@@ -71,9 +71,9 @@ export function updatePlayerList(player: Player): void {
   playerNamesEl.innerHTML = app.playerList
     .filter(player => !player.opponentID)
     .map(player => {
-      const isSelf = player.id === app.playerID;
+      const isSelf = player.id === app.player.id;
       const challengeBtn =
-        app.playerName && !isSelf
+        app.player.name && !isSelf
           ? `<button class="challenge">Haasta</button>`
           : '';
 
@@ -94,13 +94,13 @@ export function updatePlayerList(player: Player): void {
         '.player'
       ) as HTMLDivElement).getAttribute('data-id');
 
-      player.sendData('challenge to', targetID);
+      self.sendData('challenge to', targetID);
     });
   });
 
-  if ((player.data && player.data.opponentID) || app.playersInLobby >= 2) {
+  if ((self.data && self.data.opponentID) || app.playersInLobby >= 2) {
     setStatusText('empty');
-  } else if (app.playerName) {
+  } else if (app.player.name) {
     setStatusText('searching');
   }
 }

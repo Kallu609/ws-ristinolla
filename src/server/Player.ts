@@ -1,6 +1,7 @@
 import Server from './server';
 import { PlayerSocket } from '../lib/types';
 import * as WebSocket from 'ws';
+import chalk from 'chalk';
 
 class Player {
   id: string;
@@ -15,7 +16,10 @@ class Player {
     this.onConnect();
   }
 
-  log = (...data: any) => console.log(`[${this.id}]`, ...data);
+  private log(...data: any) {
+    const idText = `[${chalk.cyan(this.id)}]`;
+    console.log(idText, ...data);
+  }
 
   private onConnect = () => {
     const { server, ws } = this;
@@ -32,7 +36,7 @@ class Player {
       this.onClose();
     });
 
-    console.log(`New connection. Online: ${server.wss.clients.size}`);
+    this.log(`New connection. Online: ${server.wss.clients.size}`);
   };
 
   onMessage(data: string): void {

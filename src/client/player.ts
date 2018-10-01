@@ -1,38 +1,36 @@
-import { animate, eventListener, updatePlayerList, setStatusText } from './dom';
+import { eventListener, updatePlayerList, setStatusText } from './dom';
 import App from './app';
 import { IGameData, IPlayer } from '../lib/types';
+import { webSocketPort } from '../../config';
 
 class Player {
+  ws: WebSocket;
   data: IPlayer;
+  name: string;
+  id: string;
+  opponentID: string;
 
-  constructor(public app: App, public ws: WebSocket) {
-    this.handleSocket();
+  constructor(public app: App) {
+    this.ws = new WebSocket(`ws://localhost:${webSocketPort}`);
+    this.ws.onopen = this.onOpen;
     eventListener(this);
   }
 
-  handleSocket(): void {
+  onOpen = (): void => {
     const { ws } = this;
 
-    ws.onopen = () => {
-      console.log('Connected to server.');
-      setStatusText('signin');
-    };
-
-    ws.onclose = () => {
-      setStatusText('disconnected');
-    };
+    console.log('Connected to server.');
+    setStatusText('signin');
 
     ws.onmessage = ev => {
       const { data } = ev;
       this.onMessage(data);
     };
-  }
 
-  sendData(...data: any): void {
-    if (!data.length) return;
-    const json = JSON.stringify(data);
-    this.ws.send(json);
-  }
+    ws.onclose = () => {
+      setStatusText('disconnected');
+    };
+  };
 
   onMessage(data: any): void {
     console.log('Incoming data:', JSON.parse(data));
@@ -41,12 +39,20 @@ class Player {
     const [command, ...args] = JSON.parse(data);
 
     if (command === 'id') {
-      app.playerID = args[0];
+      this.id = args[0];
     }
 
     if (command === 'playerlist') {
       app.playerList = args[0] as IGameData;
-      this.data = app.getPlayerByID(this.app.playerID) as IPlayer;
+
+      if (this.id) {
+        const self = app.getPlayerByID(this.id) as IPlayer;
+
+        if (self && self.opponentID) {
+          this.opponentID = self.opponentID;
+        }
+      }
+
       updatePlayerList(this);
     }
 
@@ -69,9 +75,15 @@ class Player {
     }
   }
 
+  sendData(...data: any): void {
+    if (!data.length) return;
+    const json = JSON.stringify(data);
+    this.ws.send(json);
+  }
+
   signin(name: string) {
     this.sendData('signin', name);
-    this.app.playerName = name;
+    this.name = name;
   }
 }
 
