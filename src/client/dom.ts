@@ -76,7 +76,7 @@ export function showChallenge(challenger: string): void {
       clearInterval(timer);
     }
 
-    challengeTimerEl.setAttribute('value', timerValue);
+    challengeTimerEl.setAttribute('value', timerValue.toString());
 
     timerValue -= 0.5;
   }, 50);
