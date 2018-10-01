@@ -25,7 +25,7 @@ class Server {
     });
   }
 
-  sendToAll(...data: any): void {
+  sendToAll(...data: any[]): void {
     if (!data || !data.length) return;
     const json = JSON.stringify(data);
 
@@ -44,7 +44,6 @@ class Server {
     const players = this.sockets
       .map(socket => {
         if (!socket.player || !socket.player.name) return;
-
         return socket.player;
       })
       .filter(Boolean);

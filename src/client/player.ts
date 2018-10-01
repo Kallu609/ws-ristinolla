@@ -1,4 +1,9 @@
-import { eventListener, updatePlayerList, setStatusText } from './dom';
+import {
+  eventListener,
+  updatePlayerList,
+  setStatusText,
+  showChallenge,
+} from './dom';
 import App from './app';
 import { IGameData, IPlayer } from '../lib/types';
 import { webSocketPort } from '../../config';
@@ -65,17 +70,13 @@ class Player {
       const challenger = app.getPlayerByID(challengerID);
       if (!challenger) return;
 
-      const accept = confirm(`are u wana fite m8? t. ${challenger.name} ankka`);
-
-      if (accept) {
-        this.sendData('challenge accept');
-      }
+      showChallenge(challenger.name);
 
       updatePlayerList(this);
     }
   }
 
-  sendData(...data: any): void {
+  sendData(...data: any[]): void {
     if (!data.length) return;
     const json = JSON.stringify(data);
     this.ws.send(json);

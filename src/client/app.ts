@@ -11,8 +11,7 @@ class App {
   playerID: string;
 
   constructor() {
-    this.ws = new WebSocket(`ws://localhost:${webSocketPort}`);
-    this.player = new Player(this, this.ws);
+    this.player = new Player(this);
     setStatusText('connecting');
   }
 

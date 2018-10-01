@@ -1,5 +1,5 @@
 .board {
-  $col-size: $width / 3;
+  $col-size: $board-width / 3;
 
   display: grid;
   grid-template-columns: auto auto auto;

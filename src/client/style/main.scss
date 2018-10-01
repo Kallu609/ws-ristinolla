@@ -3,7 +3,7 @@
 @import '_board.scss';
 
 .container {
-  width: $width;
+  width: $board-width;
   margin: 0 auto;
 }
 
@@ -12,18 +12,81 @@
   color: black;
   font-family: 'Gochi Hand', cursive;
   text-align: center;
-  font-size: $width * 0.23;
+  font-size: $board-width * 0.23;
   margin-bottom: 10px;
 }
 
 .statustext {
   position: absolute;
-  width: $width;
+  width: $board-width;
   font-family: $main-font;
   font-size: 15px;
-  line-height: $width;
+  line-height: $board-width;
   text-align: center;
   color: $text-secondary;
+}
+
+.challengebox {
+  $width: 220px;
+  $height: 170px;
+  $padding-h: 20px;
+
+  @extend .noselect;
+
+  position: absolute;
+  padding: 0px $padding-h;
+  height: $height;
+  width: $width;
+  margin-left: $board-width / 2 - $width / 2 - $padding-h;
+  margin-top: $board-width / 2 - $height / 2;
+  display: none;
+
+  font-family: $main-font;
+  text-align: center;
+  background: $bg-primary;
+  border: 1px solid $bg-secondary;
+
+  .challenger {
+    font-size: 24px;
+  }
+
+  progress {
+    width: 100%;
+    border-radius: 3px;
+
+    &[value]::-webkit-progress-bar {
+      background-color: #eee;
+      border-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.125) inset;
+    }
+
+    &[value]::-webkit-progress-value {
+      background: $loading-bar;
+      border-radius: 3px;
+    }
+  }
+
+  p {
+    margin: 14px 0px;
+  }
+
+  button {
+    padding: 0px 20px;
+
+    &.accept {
+      background: $accept;
+      &:hover {
+        background: darken($accept, 5%);
+      }
+    }
+
+    &.decline {
+      background: $decline;
+      &:hover {
+        background: darken($decline, 5%);
+      }
+    }
+  }
 }
 
 .signin {

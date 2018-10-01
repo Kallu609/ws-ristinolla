@@ -16,39 +16,39 @@ class Player {
     this.onConnect();
   }
 
-  private log(...data: any) {
-    const idText = `[${chalk.cyan(this.id)}]`;
+  private log(...data: any[]) {
+    const nameText = this.name ? `:${chalk.yellow(this.name)}` : '';
+    const idText = `[${chalk.cyan(this.id)}${nameText}]`;
+
     console.log(idText, ...data);
   }
 
   private onConnect = () => {
     const { server, ws } = this;
+    const clientCount = server.wss.clients.size;
+
+    this.log(`New connection. Online: ${clientCount}`);
 
     this.sendData('id', this.id);
     this.sendData('playerlist', server.getGameData());
 
-    ws.on('message', (data: string) => {
-      console.log('Incoming data:', JSON.parse(data));
-      this.onMessage(data);
-    });
-
-    ws.on('close', () => {
-      this.onClose();
-    });
-
-    this.log(`New connection. Online: ${server.wss.clients.size}`);
+    ws.on('message', this.onMessage);
+    ws.on('close', this.onClose);
   };
 
-  onMessage(data: string): void {
+  onMessage = (data: string): void => {
     const { server } = this;
-    const [command, ...args] = JSON.parse(data);
+    const dataJSON = JSON.parse(data);
+    const [command, ...args] = dataJSON;
 
-    if (command === 'signin' && args.length === 1) {
-      this.name = args[0];
+    console.log('Incoming data:', dataJSON);
+
+    if (command === 'signin' && args.length >= 1) {
+      this.name = args.join(' ');
+
       server.sendGameData();
-      this.waitForGame();
 
-      this.log(`Signed in: ${this.name}`);
+      this.log(`Sign in`);
     }
 
     if (command === 'challenge to') {
@@ -70,30 +70,22 @@ class Player {
       if (!opponent) return;
 
       this.sendData('start game');
-      opponent.sendData('startgame');
+      opponent.sendData('start game');
       server.sendGameData();
 
       console.log(`New match: ${this.name} vs. ${opponent.name}`);
     }
-  }
+  };
 
-  onClose(): void {
+  onClose = (): void => {
     const { server } = this;
-    const name = this.name || 'Someone';
+    const clientCount = server.wss.clients.size;
 
     this.disconnect();
     server.sendGameData();
 
-    this.log(`${name} disconnected. Online: ${server.wss.clients.size}`);
-  }
-
-  waitForGame(): void {
-    setTimeout(() => {
-      if (!this.opponentID) {
-        this.waitForGame();
-      }
-    }, 100);
-  }
+    this.log(`Disconnect. Online: ${clientCount}`);
+  };
 
   setOpponentID(opponentID: string): void {
     this.opponentID = opponentID;
@@ -106,7 +98,7 @@ class Player {
     opponent && opponent.sendData('challenge from', this.id);
   }
 
-  sendToElse(...data: any): void {
+  sendToElse(...data: any[]): void {
     if (!data.length) return;
 
     const { sockets } = this.server;
@@ -119,7 +111,7 @@ class Player {
     }
   }
 
-  sendData(...data: any): void {
+  sendData(...data: any[]): void {
     if (!data.length) return;
     const json = JSON.stringify(data);
     this.ws.send(json);

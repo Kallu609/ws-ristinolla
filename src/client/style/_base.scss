@@ -2,9 +2,14 @@
 
 $main-font: 'Asap Condensed', sans-serif;
 $bg-primary: #ebebeb;
+$bg-secondary: #cecece;
 $text-primary: #4e4e4e;
 $text-secondary: rgb(155, 155, 155);
-$width: 300px;
+$accept: #9ae29a;
+$decline: #f9c0c0;
+$loading-bar: #a1c1db;
+
+$board-width: 300px;
 
 body {
   color: $text-primary;

@@ -11,8 +11,15 @@ html(lang='en')
     include gh-corner.pug
     .container
       .row
-        .header Ristinolla
+        // .header Ristinolla
         .statustext
+        .challengebox
+          p Haastaja on löytynyt!
+          p.challenger Seppo
+          p
+            button.accept Hyväksy
+            button.decline Hylkää
+          progress(value='60' max='100')
 
         .board
           - for(var i = 0; i < 9; i++)
